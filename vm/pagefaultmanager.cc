@@ -45,7 +45,7 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
   printf("**** Warning: page fault manager is not implemented yet\n");
     exit(-1);
     return ((ExceptionType)0);
-//#else
+#else
   //gestion bits IO et lock (peut-etre plus tard)
 
 
@@ -81,6 +81,8 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
         (char *)&(g_machine->mainMemory[ttable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),
         buf,
         g_cfg->PageSize);
+
+      
     }
     else {
       // The section does not have an image in the executable

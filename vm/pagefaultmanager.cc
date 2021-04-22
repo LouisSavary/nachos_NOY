@@ -41,13 +41,12 @@ PageFaultManager::~PageFaultManager() {
 */  
 ExceptionType PageFaultManager::PageFault(uint32_t virtualPage) 
 {
-#ifndef ETUDIANTS_TP
-  printf("**** Warning: page fault manager is not implemented yet\n");
-    exit(-1);
-    return ((ExceptionType)0);
-#else
+// #ifndef ETUDIANTS_TP
+//   printf("**** Warning: page fault manager is not implemented yet\n");
+//     exit(-1);
+//     return ((ExceptionType)0);
+// //#else
   //gestion bits IO (peut-etre plus tard)
-
 
   AddrSpace * addrspace = g_current_thread->GetProcessOwner()->addrspace;
   TranslationTable *ttable = addrspace->translationTable;
@@ -80,21 +79,32 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
     }
   }
 
-  //donner une page physique et la set
+  //donner une page physique et l'initialiser
   g_physical_mem_manager->AddPhysicalToVirtualMapping(addrspace, virtualPage);
+  
+  // for (int i = 0; i < g_cfg->PageSize; i++)
+  //   g_machine->mmu->WriteMem(
+  //     virtualPage +i,
+  //     1,
+  //     buf[i]
+  //   );
+  // 
+  // uint32_t addr;
+  // g_machine->mmu->Translate(virtualPage, &addr, 4, true);
+  // printf("test compare addr : \n\ttranslate : %x\n\ta la main : %lx\n",
+  //   addr, &(g_machine->mainMemory[ttable->getPhysicalPage(virtualPage)*g_cfg->PageSize]));
   memcpy(
     &(g_machine->mainMemory[ttable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),
     buf,
     g_cfg->PageSize);
 
-  
   ttable->setBitValid(virtualPage);
   ttable->clearBitM(virtualPage);
   g_physical_mem_manager->UnlockPage(ttable->getPhysicalPage(virtualPage));
   
   return NO_EXCEPTION;
   
-#endif
+// #endif
 }
 
 

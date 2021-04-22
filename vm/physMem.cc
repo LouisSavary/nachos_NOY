@@ -131,7 +131,7 @@ int PhysicalMemManager::AddPhysicalToVirtualMapping(AddrSpace* owner,int virtual
   tpr[pp].locked=true;
   tpr[pp].virtualPage = virtualPage;
   owner->translationTable->setPhysicalPage(virtualPage, pp);
-  // Print();
+  Print();
 
   
   return (pp);

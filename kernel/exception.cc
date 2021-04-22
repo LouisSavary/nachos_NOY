@@ -276,6 +276,14 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 	  g_syscall_error->PrintLastMsg(g_console_driver,ch);
 	  break;
 	}
+	// case SC_MMAP: {
+	// 	g_machine->WriteIntRegister(2,
+	// 		g_current_thread->GetProcessOwner()->addrspace->Mmap(
+	// 			g_machine->ReadIntRegister(4), //cast to pointer
+	// 			g_machine->ReadIntRegister(5)
+	// 		));
+	// 	break;
+	// }
 #ifdef ETUDIANTS_TP
 	case SC_P: {
 		DEBUG('e', (char*)"Debug: P call.\n");

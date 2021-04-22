@@ -1,0 +1,5 @@
+[0m2021.04.02 12:25:11 INFO  Started: Metals version 0.10.0 in workspace '/home/louis/Documents/NOY/nachos' for client vscode 1.55.0.[0m
+[0m2021.04.02 12:25:13 INFO  time: initialize in 1.99s[0m
+[0m2021.04.02 12:25:21 WARN  Build server is not auto-connectable.[0m
+[0m2021.04.02 12:25:21 WARN  no build tool detected in workspace '/home/louis/Documents/NOY/nachos'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. [0m
+[0m2021.04.02 15:54:03 INFO  shutting down Metals[0m

@@ -219,14 +219,15 @@ AddrSpace::AddrSpace(OpenFile * exec_file, Process *p, int *err)
         // Set up default values for the page table entry
         translationTable->clearBitSwap(virt_page);
         translationTable->setBitReadAllowed(virt_page);
+        translationTable->clearBitIo(virt_page);
+        
         if (section_table[i].sh_flags & SHF_WRITE)
           translationTable->setBitWriteAllowed(virt_page);
-        else translationTable->clearBitWriteAllowed(virt_page);
-        translationTable->clearBitIo(virt_page);
+        else 
+          translationTable->clearBitWriteAllowed(virt_page);
 
 
         if (section_table[i].sh_type != SHT_NOBITS) {
-
           // A la place de ReadAt, on calcule simplement l'adresse physique
           translationTable->setAddrDisk(virt_page, 
             section_table[i].sh_offset + pgdisk*g_cfg->PageSize);
@@ -351,7 +352,7 @@ int AddrSpace::StackAllocate(void)
     translationTable->setBitWriteAllowed(i);
     translationTable->clearBitIo(i);
 #endif
-    }
+  }
 
   int stackpointer = (stackBasePage+numPages)*g_cfg->PageSize - 4*sizeof(int);
   return stackpointer;

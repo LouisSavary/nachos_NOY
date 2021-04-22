@@ -420,8 +420,7 @@ Thread::RestoreProcessorState()
   printf("**** Warning: method Thread::RestoreProcessorState is not implemented yet\n");
   exit(-1);
 }
-#endif
-#ifdef ETUDIANTS_TP
+#else
 void Thread::RestoreProcessorState() {
   for (int i = 0; i < NUM_INT_REGS; i++) {
     g_machine->WriteIntRegister(i, thread_context.int_registers[i]);

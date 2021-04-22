@@ -37,7 +37,8 @@ PhysicalMemManager::PhysicalMemManager() {
 PhysicalMemManager::~PhysicalMemManager() {
   // Empty free page list
   int64_t page;
-  while (!free_page_list.IsEmpty()) page =  (int64_t)free_page_list.Remove();
+  while (!free_page_list.IsEmpty()) 
+    page =  (int64_t)free_page_list.Remove();
 
   // Delete physical page table
   delete[] tpr;
@@ -126,13 +127,11 @@ int PhysicalMemManager::AddPhysicalToVirtualMapping(AddrSpace* owner,int virtual
     pp= EvictPage();
   }
 
-  TranslationTable *tTable =  g_machine->mmu->translationTable;
-
-  g_physical_mem_manager->tpr[pp].virtualPage = virtualPage;
-  g_physical_mem_manager->tpr[pp].owner = owner;
-  g_physical_mem_manager->tpr[pp].locked=true;
-  tTable->setPhysicalPage(virtualPage, pp);
-
+  ChangeOwner(pp, g_current_thread);
+  tpr[pp].locked=true;
+  tpr[pp].virtualPage = virtualPage;
+  owner->translationTable->setPhysicalPage(virtualPage, pp);
+  // Print();
 
   
   return (pp);
@@ -180,7 +179,7 @@ int PhysicalMemManager::FindFreePage() {
 //-----------------------------------------------------------------
 int PhysicalMemManager::EvictPage() {
   int i = (i_clock+1)%g_cfg->NumPhysPages;
-  tpr_c *page = &(g_physical_mem_manager->tpr[i]);
+  tpr_c *page = &(tpr[i]);
   
   bool tour_complet = false;
 
@@ -189,35 +188,41 @@ int PhysicalMemManager::EvictPage() {
     page->owner->translationTable->clearBitU(page->virtualPage);
     i ++;
     i %= g_cfg->NumPhysPages;
-    page = &(g_physical_mem_manager->tpr[i]);
+    page = &(tpr[i]);
     
-    if (i == (i_clock+1)%g_cfg->NumPhysPages)
+    //avoid soft locking
+    if (i == (i_clock+1)%g_cfg->NumPhysPages) {
       if (tour_complet) {
         // toutes les pages sont locked
-
+        g_current_thread->Yield();
+        tour_complet = false;
       } else {
         tour_complet = true;
       }
+    }
   }
   // page i is unused
 
 
-  page->locked = true;
   TranslationTable *ttable = page->owner->translationTable;
+  tpr[i].locked = true;
+  
+  // write back
   if (ttable->getBitM(page->virtualPage) == 1) {
-
+    ttable->setBitIo(page->virtualPage);
+    
     int swapsector = g_swap_manager->PutPageSwap(-1, 
       (char*)&g_machine->mainMemory[ttable->getAddrDisk(page->virtualPage)]);
     ttable->setAddrDisk(page->virtualPage, swapsector);
     ttable->setBitSwap(page->virtualPage);
+
+    ttable->clearBitIo(page->virtualPage);
   }
 
-
-  //change owner
-  ChangeOwner(i, g_current_thread);
+  tpr[i].owner->translationTable->clearBitValid(page->virtualPage);
 
   i_clock = i;
-  
+  ChangeOwner(i, g_current_thread);
   return i;
 }
 

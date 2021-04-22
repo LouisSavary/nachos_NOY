@@ -46,56 +46,54 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
     exit(-1);
     return ((ExceptionType)0);
 #else
-  //gestion bits IO et lock (peut-etre plus tard)
+  //gestion bits IO (peut-etre plus tard)
 
 
   AddrSpace * addrspace = g_current_thread->GetProcessOwner()->addrspace;
   TranslationTable *ttable = addrspace->translationTable;
-  //donner une page physique
-  g_physical_mem_manager->AddPhysicalToVirtualMapping(addrspace, virtualPage);
   
   
+  char buf [g_cfg->PageSize];
+
   if (ttable->getBitSwap(virtualPage) == 1) {
-    //ne fonctionne pas car pas d'horloge
-      //while(ttable->getAddrDisk(virtualPage) == -1);
+    while(ttable->getAddrDisk(virtualPage) == -1) 
+      g_current_thread->Yield();
     
     g_swap_manager->GetPageSwap(
         ttable->getAddrDisk(virtualPage), 
-        (char *)&(g_machine->mainMemory[ttable->getPhysicalPage(virtualPage)*g_cfg->PageSize])
+        buf
     );
 
   } else {
     if (addrspace->translationTable->getAddrDisk(virtualPage) != -1) {
       // The section has an image in the executable file
       // Read it from the disk
-      int addrdisk = ttable->getAddrDisk(virtualPage);
 
-      // page temporaire pour synchronisation
-      char buf [g_cfg->PageSize];
       g_current_thread->GetProcessOwner()->exec_file->ReadAt(
         buf,
         g_cfg->PageSize, 
-        addrdisk);
+        ttable->getAddrDisk(virtualPage));
 
-      memcpy(
-        (char *)&(g_machine->mainMemory[ttable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),
-        buf,
-        g_cfg->PageSize);
-
-      
-    }
-    else {
-      // The section does not have an image in the executable
-      // Fill it with zeroes
-      memset(&(g_machine->mainMemory[addrspace->translationTable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),
-      0, g_cfg->PageSize);
+    } else {
+      //page anonyme
+      memset(buf, 0, g_cfg->PageSize);
     }
   }
+
+  //donner une page physique et la set
+  g_physical_mem_manager->AddPhysicalToVirtualMapping(addrspace, virtualPage);
+  memcpy(
+    &(g_machine->mainMemory[ttable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),
+    buf,
+    g_cfg->PageSize);
+
+  
   ttable->setBitValid(virtualPage);
+  ttable->clearBitM(virtualPage);
+  g_physical_mem_manager->UnlockPage(ttable->getPhysicalPage(virtualPage));
+  
   return NO_EXCEPTION;
   
-
-
 #endif
 }
 

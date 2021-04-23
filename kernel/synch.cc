@@ -75,15 +75,12 @@ Semaphore::~Semaphore()
 */
 //----------------------------------------------------------------------
 
-#ifndef ETUDIANTS_TP
 void
 Semaphore::P() {
+#ifndef ETUDIANTS_TP
   printf("**** Warning: method Semaphore::P is not implemented yet\n");
   exit(-1);
-}
-#endif
-#ifdef  ETUDIANTS_TP
-void Semaphore::P() {
+#else
   IntStatus oldlevel = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
 
   value -= 1;
@@ -95,8 +92,8 @@ void Semaphore::P() {
   }
   
   g_machine->interrupt->SetStatus(oldlevel);
-}
 #endif
+}
 
 //----------------------------------------------------------------------
 // Semaphore::V
@@ -106,17 +103,12 @@ void Semaphore::P() {
 //	are disabled when it is called.
 */
 //----------------------------------------------------------------------
-#ifndef ETUDIANTS_TP
 void
 Semaphore::V() {
+#ifndef ETUDIANTS_TP
   printf("**** Warning: method Semaphore::V is not implemented yet\n");
   exit(-1);
-}
-#endif
-#ifdef  ETUDIANTS_TP
-void Semaphore::V() {
-  IntStatus oldlevel = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
-
+#else
   value += 1;
 
   if (value <= 0){
@@ -126,8 +118,8 @@ void Semaphore::V() {
   }
   
   g_machine->interrupt->SetStatus(oldlevel);
-}
 #endif
+}
 
 //----------------------------------------------------------------------
 // Lock::Lock
@@ -170,14 +162,11 @@ Lock::~Lock() {
 //	when it is called.
 */
 //----------------------------------------------------------------------
-#ifndef ETUDIANTS_TP
 void Lock::Acquire() {
+#ifndef ETUDIANTS_TP
    printf("**** Warning: method Lock::Acquire is not implemented yet\n");
     exit(-1);
-}
-#endif
-#ifdef  ETUDIANTS_TP
-void Lock::Acquire() {
+#else
   IntStatus oldlevel = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
   DEBUG('l', (char *)"**\t lock acquire : %s\tby %s\n", this->name, g_current_thread->GetName());
   
@@ -192,8 +181,8 @@ void Lock::Acquire() {
   }
 
   g_machine->interrupt->SetStatus(oldlevel);
-}
 #endif
+}
 //----------------------------------------------------------------------
 // Lock::Release
 /*! 	Wake up a waiter if necessary, or release it if no thread is waiting.
@@ -203,14 +192,11 @@ void Lock::Acquire() {
 //	are disabled when it is called.
 */
 //----------------------------------------------------------------------
-#ifndef ETUDIANTS_TP
 void Lock::Release() {
+#ifndef ETUDIANTS_TP
     printf("**** Warning: method Lock::Release is not implemented yet\n");
     exit(-1);
-}
-#endif
-#ifdef  ETUDIANTS_TP
-void Lock::Release() {
+#else
   IntStatus oldlevel = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
   DEBUG('l', (char *)"**\t lock release : %s\tby %s\n", this->name, g_current_thread->GetName());
   
@@ -227,8 +213,8 @@ void Lock::Release() {
   } //do nothing if wasn't call by the owner
 
   g_machine->interrupt->SetStatus(oldlevel);
-}
 #endif
+}
 //----------------------------------------------------------------------
 // Lock::isHeldByCurrentThread
 /*! To check if current thread hold the lock
@@ -269,22 +255,19 @@ Condition::~Condition() {
 //  This operation must be atomic, so we need to disable interrupts.
 */	
 //----------------------------------------------------------------------
-#ifndef ETUDIANTS_TP
 void Condition::Wait() { 
+#ifndef ETUDIANTS_TP
     printf("**** Warning: method Condition::Wait is not implemented yet\n");
     exit(-1);
-}
-#endif
-#ifdef  ETUDIANTS_TP
-void Condition::Wait() {
+#else
   IntStatus oldlevel = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
   
   waitqueue->Append(g_current_thread);
   g_current_thread->Sleep();
 
   g_machine->interrupt->SetStatus(oldlevel);
-}
 #endif
+}
 
 //----------------------------------------------------------------------
 // Condition::Signal
@@ -292,14 +275,11 @@ void Condition::Wait() {
 // This operation must be atomic, so we need to disable interrupts.
 */
 //----------------------------------------------------------------------
-#ifndef ETUDIANTS_TP
 void Condition::Signal() { 
+#ifndef ETUDIANTS_TP
     printf("**** Warning: method Condition::Signal is not implemented yet\n");
     exit(-1);
-}
-#endif
-#ifdef  ETUDIANTS_TP
-void Condition::Signal() {
+#else
   IntStatus oldlevel = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
   
   if (!waitqueue->IsEmpty()) {
@@ -308,8 +288,8 @@ void Condition::Signal() {
   }
 
   g_machine->interrupt->SetStatus(oldlevel);
-}
 #endif
+}
 
 //----------------------------------------------------------------------
 // Condition::Broadcast
@@ -317,14 +297,11 @@ void Condition::Signal() {
 // This operation must be atomic, so we need to disable interrupts.
 */
 //----------------------------------------------------------------------
-#ifndef ETUDIANTS_TP
 void Condition::Broadcast() { 
+#ifndef ETUDIANTS_TP
   printf("**** Warning: method Condition::Broadcast is not implemented yet\n");
   exit(-1);
-}
-#endif
-#ifdef  ETUDIANTS_TP
-void Condition::Broadcast() {
+#else
   IntStatus oldlevel = g_machine->interrupt->SetStatus(INTERRUPTS_OFF);
   
   while (!waitqueue->IsEmpty()) {
@@ -333,5 +310,5 @@ void Condition::Broadcast() {
   }
 
   g_machine->interrupt->SetStatus(oldlevel);
-}
 #endif
+}

@@ -5,6 +5,7 @@
 
 SemId sem;
 SemId sem_end;
+
 void testP(){
     int i;
     for(i = 0; i < loop; i++){

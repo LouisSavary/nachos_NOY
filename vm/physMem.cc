@@ -121,6 +121,13 @@ void PhysicalMemManager::ChangeOwner(long numPage, Thread* owner) {
 //-----------------------------------------------------------------
 int PhysicalMemManager::AddPhysicalToVirtualMapping(AddrSpace* owner,int virtualPage) 
 {
+#ifndef ETUDIANTS_TP
+  printf("**** Warning: function AddPhysicalToVirtualMapping is not implemented\n");
+
+  exit(-1);
+
+  return (0);
+#else
   if (free_page_list.IsEmpty()) {
     
     EvictPage();
@@ -134,6 +141,7 @@ int PhysicalMemManager::AddPhysicalToVirtualMapping(AddrSpace* owner,int virtual
   
   // Print();
   return (pp);
+#endif
 }
 
 //-----------------------------------------------------------------
@@ -177,6 +185,14 @@ int PhysicalMemManager::FindFreePage() {
 */
 //-----------------------------------------------------------------
 int PhysicalMemManager::EvictPage() {
+#ifndef ETUDIANTS_TP
+
+  printf("**** Warning: page replacement algorithm is not implemented yet\n");
+
+  exit(-1);
+
+  return (0);
+#else
   int i = (i_clock+1)%g_cfg->NumPhysPages;
   tpr_c *page = &(tpr[i]);
   
@@ -230,6 +246,7 @@ int PhysicalMemManager::EvictPage() {
 
   i_clock = i;
   return i;
+#endif
 }
 
 //-----------------------------------------------------------------

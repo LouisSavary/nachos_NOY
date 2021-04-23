@@ -220,6 +220,8 @@ AddrSpace::AddrSpace(OpenFile * exec_file, Process *p, int *err)
         translationTable->clearBitSwap(virt_page);
         translationTable->setBitReadAllowed(virt_page);
         translationTable->clearBitIo(virt_page);
+        translationTable->clearBitU(virt_page);
+        translationTable->clearBitM(virt_page);
         
         if (section_table[i].sh_flags & SHF_WRITE)
           translationTable->setBitWriteAllowed(virt_page);

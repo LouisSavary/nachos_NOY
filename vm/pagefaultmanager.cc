@@ -47,11 +47,12 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
 //     return ((ExceptionType)0);
 // //#else
   //gestion bits IO (peut-etre plus tard)
-
   AddrSpace * addrspace = g_current_thread->GetProcessOwner()->addrspace;
   TranslationTable *ttable = addrspace->translationTable;
   
-  
+  while (ttable->getBitIo(virtualPage)) g_current_thread->Yield();
+  if (ttable->getBitValid(virtualPage)) return NO_EXCEPTION;
+
   char buf [g_cfg->PageSize];
 
   if (ttable->getBitSwap(virtualPage) == 1) {
@@ -88,11 +89,7 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
   //     1,
   //     buf[i]
   //   );
-  // 
-  // uint32_t addr;
-  // g_machine->mmu->Translate(virtualPage, &addr, 4, true);
-  // printf("test compare addr : \n\ttranslate : %x\n\ta la main : %lx\n",
-  //   addr, &(g_machine->mainMemory[ttable->getPhysicalPage(virtualPage)*g_cfg->PageSize]));
+  
   memcpy(
     &(g_machine->mainMemory[ttable->getPhysicalPage(virtualPage)*g_cfg->PageSize]),
     buf,
@@ -100,6 +97,7 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
 
   ttable->setBitValid(virtualPage);
   ttable->clearBitM(virtualPage);
+  
   g_physical_mem_manager->UnlockPage(ttable->getPhysicalPage(virtualPage));
   
   return NO_EXCEPTION;

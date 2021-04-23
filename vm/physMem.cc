@@ -121,18 +121,17 @@ void PhysicalMemManager::ChangeOwner(long numPage, Thread* owner) {
 //-----------------------------------------------------------------
 int PhysicalMemManager::AddPhysicalToVirtualMapping(AddrSpace* owner,int virtualPage) 
 {
-  int pp = FindFreePage();
-  if (pp == -1) {
+  if (free_page_list.IsEmpty()) {
     
-    pp= EvictPage();
+    EvictPage();
   }
+  int pp = FindFreePage();
 
   ChangeOwner(pp, g_current_thread);
   tpr[pp].locked=true;
   tpr[pp].virtualPage = virtualPage;
   owner->translationTable->setPhysicalPage(virtualPage, pp);
-  Print();
-
+  
   
   return (pp);
 }
@@ -205,24 +204,34 @@ int PhysicalMemManager::EvictPage() {
 
 
   TranslationTable *ttable = page->owner->translationTable;
+  int vp = page->virtualPage;
+  
   tpr[i].locked = true;
+  ttable->setBitIo(vp);
   
   // write back
-  if (ttable->getBitM(page->virtualPage) == 1) {
-    ttable->setBitIo(page->virtualPage);
+  if (ttable->getBitM(vp) == 1) {
+    bool sw = ttable->getBitSwap(vp);
+    ttable->setBitSwap(vp);
     
-    int swapsector = g_swap_manager->PutPageSwap(-1, 
-      (char*)&g_machine->mainMemory[ttable->getAddrDisk(page->virtualPage)]);
-    ttable->setAddrDisk(page->virtualPage, swapsector);
-    ttable->setBitSwap(page->virtualPage);
+    if (sw) {
+      g_swap_manager->PutPageSwap(ttable->getAddrDisk(vp), 
+        (char*)&(g_machine->mainMemory[ttable->getPhysicalPage(vp)*g_cfg->PageSize]));
+    } else {
+      int swapsector = g_swap_manager->PutPageSwap(-1, 
+        (char*)&(g_machine->mainMemory[ttable->getPhysicalPage(vp)*g_cfg->PageSize]));
 
-    ttable->clearBitIo(page->virtualPage);
+      ttable->setAddrDisk(vp, swapsector);
+    }
+
+    ttable->clearBitM(vp);
   }
 
-  tpr[i].owner->translationTable->clearBitValid(page->virtualPage);
+  ttable->clearBitIo(vp);
+  
+  RemovePhysicalToVirtualMapping(i);
 
   i_clock = i;
-  ChangeOwner(i, g_current_thread);
   return i;
 }
 

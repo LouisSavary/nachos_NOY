@@ -10,7 +10,6 @@ void testP(){
     for(i = 0; i < loop; i++){
         P(sem);
         n_printf("P %d\n", i);
-        Yield();
     }
 
     V(sem_end);
@@ -21,7 +20,6 @@ void testV(){
     for(j = 0; j < loop; j++){
         n_printf("V %d\n", j);
         V(sem);
-        Yield();
     }
 }
 

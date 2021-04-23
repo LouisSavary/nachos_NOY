@@ -153,7 +153,6 @@ Machine::RaiseException(ExceptionType which, int badVAddr)
   // Sanity check of the exception number
   if (which <= EXCEPTION_NUMBER) {
     DEBUG('m', (char *)"Exception: %s\n", exceptionNames[which]);
- 
     // Call of the exception handler
     int_registers[BADVADDR_REG] = badVAddr;
     DelayedLoad(0, 0);			// finish anything in progress

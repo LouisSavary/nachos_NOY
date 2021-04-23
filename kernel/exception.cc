@@ -883,7 +883,6 @@ void ExceptionHandler(ExceptionType exceptiontype, int vaddr)
 	   g_current_thread->GetName(), g_machine->ReadIntRegister(PC_REG));
     printf("\t*** Access to invalid or unmapped virtual address 0x%x ***\n",
 	   vaddr);
-	g_machine->DumpState();
     g_machine->interrupt->Halt(ERROR);
     break;
 

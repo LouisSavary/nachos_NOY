@@ -132,7 +132,7 @@ int PhysicalMemManager::AddPhysicalToVirtualMapping(AddrSpace* owner,int virtual
   tpr[pp].virtualPage = virtualPage;
   owner->translationTable->setPhysicalPage(virtualPage, pp);
   
-  
+  // Print();
   return (pp);
 }
 
@@ -207,7 +207,6 @@ int PhysicalMemManager::EvictPage() {
   int vp = page->virtualPage;
   
   tpr[i].locked = true;
-  ttable->setBitIo(vp);
   
   // write back
   if (ttable->getBitM(vp) == 1) {
@@ -227,8 +226,6 @@ int PhysicalMemManager::EvictPage() {
     ttable->clearBitM(vp);
   }
 
-  ttable->clearBitIo(vp);
-  
   RemovePhysicalToVirtualMapping(i);
 
   i_clock = i;

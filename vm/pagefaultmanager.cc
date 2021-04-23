@@ -53,6 +53,8 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
   while (ttable->getBitIo(virtualPage)) g_current_thread->Yield();
   if (ttable->getBitValid(virtualPage)) return NO_EXCEPTION;
 
+
+  ttable->setBitIo(virtualPage);
   char buf [g_cfg->PageSize];
 
   if (ttable->getBitSwap(virtualPage) == 1) {
@@ -64,21 +66,21 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
         buf
     );
 
+  } else if (addrspace->translationTable->getAddrDisk(virtualPage) != -1) {
+    //pas anonyme et pas dans le swap
+    // The section has an image in the executable file
+    // Read it from the disk
+
+    g_current_thread->GetProcessOwner()->exec_file->ReadAt(
+      buf,
+      g_cfg->PageSize, 
+      ttable->getAddrDisk(virtualPage));
+
   } else {
-    if (addrspace->translationTable->getAddrDisk(virtualPage) != -1) {
-      // The section has an image in the executable file
-      // Read it from the disk
-
-      g_current_thread->GetProcessOwner()->exec_file->ReadAt(
-        buf,
-        g_cfg->PageSize, 
-        ttable->getAddrDisk(virtualPage));
-
-    } else {
-      //page anonyme
-      memset(buf, 0, g_cfg->PageSize);
-    }
+    //page anonyme pas encore dans le swap
+    memset(buf, 0, g_cfg->PageSize);
   }
+
 
   //donner une page physique et l'initialiser
   g_physical_mem_manager->AddPhysicalToVirtualMapping(addrspace, virtualPage);
@@ -97,6 +99,7 @@ ExceptionType PageFaultManager::PageFault(uint32_t virtualPage)
 
   ttable->setBitValid(virtualPage);
   ttable->clearBitM(virtualPage);
+  ttable->clearBitIo(virtualPage);
   
   g_physical_mem_manager->UnlockPage(ttable->getPhysicalPage(virtualPage));
   
